@@ -33,11 +33,29 @@ const uint8_t buffer[_BUFFER_SIZE] = {
 
 static int	load_file(char *fname, struct s_woody *w)
 {
+	Elf64_Shdr	*sect;
+	Elf64_Shdr	*strtab;
+	void		*tst;
+	unsigned long	new_os;
+
 	if ((w->fd = open(fname, O_RDONLY)) < 0 || (fstat(w->fd, &w->s) < 0))
 		return (0);
-	w->header = mmap(0, w->s.st_size + _BUFFER_SIZE + sizeof(Elf64_Shdr),
-			PROT_WRITE, MAP_PRIVATE, w->fd, 0);
+	w->header = mmap(0, w->s.st_size, PROT_WRITE, MAP_PRIVATE, w->fd, 0);
 	printf("%ld\n", w->header->e_entry);
+	printf("%d\n", w->header->e_shnum);
+	tst = w->header;
+	sect = tst + w->header->e_shoff;
+	strtab = &sect[w->header->e_shstrndx];
+	char	*strs = tst + strtab->sh_offset;
+	new_os = 0;
+	for (int i = 0; i != w->header->e_shnum; i++)
+	{
+		printf("%lu\n", sect->sh_offset - new_os);
+		new_os = (sect->sh_offset + sect->sh_size);
+		printf("%s %lu\n", (char*)(strs + sect->sh_name), sect->sh_offset);
+		sect++;
+	}
+	printf("PUT NEW SECTION HEADER AT OFFSET %lu\n", new_os);
 	return (1);
 }
 

@@ -13,6 +13,8 @@ struct	s_woody
 {
 	Elf64_Ehdr	*header;
 	struct stat	s;
+	void		*new_header_start;
+	size_t		new_header_size;
 	int		addsz;
 	int		fd;
 };
